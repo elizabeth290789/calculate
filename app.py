@@ -176,16 +176,18 @@ if submitted:
 
         st.subheader("Зависимость размера выборки от MDE")
 
+        mde_chart_data = mde_chart_data.sort_values("MDE (п.п.)")
+
         base_chart = alt.Chart(mde_chart_data).encode(
             x=alt.X(
-                "MDE (п.п.):Q",
-                title="MDE (п.п.)",
-                axis=alt.Axis(labelAngle=0),
-            ),
-            y=alt.Y(
                 "Размер выборки на группу:Q",
                 title="Размер выборки на группу",
-                scale=alt.Scale(type="log"),
+                axis=alt.Axis(format=",.0f"),
+            ),
+            y=alt.Y(
+                "MDE (п.п.):O",
+                title="MDE (п.п.)",
+                sort="ascending",
             ),
             tooltip=[
                 alt.Tooltip("MDE (п.п.):Q", title="MDE (п.п.)", format=".2f"),
@@ -198,11 +200,14 @@ if submitted:
         )
 
         sample_size_chart = (
-            base_chart.mark_line(point=False, color="#4C78A8")
-            + base_chart.mark_circle(size=110, color="#4C78A8")
-            + base_chart.mark_text(dy=-12, fontSize=12, color="#1F2937").encode(
-                text="Подпись:N"
-            )
+            base_chart.mark_bar(color="#4C78A8")
+            + base_chart.mark_text(
+                align="left",
+                baseline="middle",
+                dx=6,
+                fontSize=12,
+                color="#1F2937",
+            ).encode(text="Подпись:N")
         ).properties(height=420)
 
         st.altair_chart(sample_size_chart, use_container_width=True)
