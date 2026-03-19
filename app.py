@@ -39,14 +39,15 @@ st.subheader(
 )
 
 with st.form("sample_size_form"):
-    p1 = st.number_input(
-        "Базовая конверсия в регистрацию, p1",
+    p1_input = st.number_input(
+        "Базовая конверсия в регистрацию (%)",
         min_value=0.0,
-        max_value=1.0,
-        value=0.07,
-        step=0.01,
+        max_value=100.0,
+        value=7.0,
+        step=0.1,
         format="%g",
     )
+    p1 = p1_input / 100
     mde_pp = st.number_input(
         "MDE в процентных пунктах, mde_pp",
         min_value=0.0001,
@@ -90,8 +91,8 @@ with st.form("sample_size_form"):
 if submitted:
     errors = []
 
-    if not 0 <= p1 <= 1:
-        errors.append("Базовая конверсия p1 должна быть в диапазоне от 0 до 1.")
+    if not 0 <= p1_input <= 100:
+        errors.append("Базовая конверсия должна быть в диапазоне от 0 до 100%.")
     if not 0 < alpha < 1:
         errors.append("Параметр alpha должен быть больше 0 и меньше 1.")
     if not 0 < power < 1:
