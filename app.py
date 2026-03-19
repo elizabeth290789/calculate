@@ -45,14 +45,14 @@ with st.form("sample_size_form"):
         max_value=1.0,
         value=0.07,
         step=0.01,
-        format="%.4f",
+        format="%g",
     )
     mde_pp = st.number_input(
         "MDE в процентных пунктах, mde_pp",
         min_value=0.0001,
         value=0.5,
         step=0.1,
-        format="%.4f",
+        format="%g",
     )
     alpha = st.number_input(
         "alpha",
@@ -60,7 +60,7 @@ with st.form("sample_size_form"):
         max_value=0.9999,
         value=0.05,
         step=0.01,
-        format="%.4f",
+        format="%g",
     )
     power = st.number_input(
         "power",
@@ -68,7 +68,7 @@ with st.form("sample_size_form"):
         max_value=0.9999,
         value=0.8,
         step=0.01,
-        format="%.4f",
+        format="%g",
     )
 
     submitted = st.form_submit_button("Рассчитать", use_container_width=True)
