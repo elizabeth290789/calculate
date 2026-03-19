@@ -1,6 +1,5 @@
 import math
 
-import altair as alt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -170,47 +169,9 @@ if submitted:
                 if p1 + current_mde_pp / 100 <= 1
             ]
         )
-        mde_chart_data["Подпись"] = mde_chart_data["Размер выборки на группу"].map(
-            lambda value: f"{value:,}".replace(",", " ")
-        )
-
-        st.subheader("Зависимость размера выборки от MDE")
+        st.subheader("Как меняется размер выборки при разных MDE")
 
         mde_chart_data = mde_chart_data.sort_values("MDE (п.п.)")
-
-        base_chart = alt.Chart(mde_chart_data).encode(
-            x=alt.X(
-                "Размер выборки на группу:Q",
-                title="Размер выборки на группу",
-                axis=alt.Axis(format=",.0f"),
-            ),
-            y=alt.Y(
-                "MDE (п.п.):O",
-                title="MDE (п.п.)",
-                sort="ascending",
-            ),
-            tooltip=[
-                alt.Tooltip("MDE (п.п.):Q", title="MDE (п.п.)", format=".2f"),
-                alt.Tooltip(
-                    "Размер выборки на группу:Q",
-                    title="Размер выборки на группу",
-                    format=",.0f",
-                ),
-            ],
-        )
-
-        sample_size_chart = (
-            base_chart.mark_bar(color="#4C78A8")
-            + base_chart.mark_text(
-                align="left",
-                baseline="middle",
-                dx=6,
-                fontSize=12,
-                color="#1F2937",
-            ).encode(text="Подпись:N")
-        ).properties(height=420)
-
-        st.altair_chart(sample_size_chart, use_container_width=True)
         st.dataframe(
             mde_chart_data[["MDE (п.п.)", "Размер выборки на группу"]],
             use_container_width=True,
