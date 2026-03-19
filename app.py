@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+import pandas as pd
 import streamlit as st
 from scipy.stats import norm
 
@@ -9,6 +10,9 @@ st.set_page_config(
     page_title="Калькулятор размера выборки для A/B-теста регистрации",
     page_icon="📊",
 )
+
+
+MDE_RANGE_PP = [0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0]
 
 
 def calculate_sample_size_per_group(
@@ -149,3 +153,23 @@ if submitted:
         st.caption(
             "Расчет выполнен для двух равных групп 50/50 и бинарной метрики регистрации."
         )
+
+        mde_chart_data = pd.DataFrame(
+            [
+                {
+                    "MDE (п.п.)": current_mde_pp,
+                    "Размер выборки на группу": calculate_sample_size_per_group(
+                        p1=p1,
+                        mde_pp=current_mde_pp,
+                        alpha=alpha,
+                        power=power,
+                    )[0],
+                }
+                for current_mde_pp in MDE_RANGE_PP
+                if p1 + current_mde_pp / 100 <= 1
+            ]
+        )
+
+        st.subheader("Зависимость размера выборки от MDE")
+        st.line_chart(mde_chart_data, x="MDE (п.п.)", y="Размер выборки на группу")
+        st.dataframe(mde_chart_data, use_container_width=True, hide_index=True)
