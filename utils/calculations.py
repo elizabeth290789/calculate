@@ -27,3 +27,29 @@ def calculate_sample_size_per_group(
 
     n = numerator / denominator
     return math.ceil(n), p2
+
+
+def calculate_mde(
+    p: float,
+    base_per_month: float,
+    test_months: float,
+    alpha: float = 0.05,
+    power: float = 0.8,
+) -> dict[str, float]:
+    n_total = base_per_month * test_months
+    n_per_group = n_total / 2
+
+    z_alpha = norm.ppf(1 - alpha / 2)
+    z_power = norm.ppf(power)
+
+    mde = (z_alpha + z_power) * math.sqrt(2 * p * (1 - p) / n_per_group)
+    uplift_pct = (mde / p) * 100
+    p_detectable = p + mde
+
+    return {
+        "n_total": n_total,
+        "n_per_group": n_per_group,
+        "mde": mde,
+        "uplift_pct": uplift_pct,
+        "p_detectable": p_detectable,
+    }
