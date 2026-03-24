@@ -1,42 +1,53 @@
-import math
-
 import streamlit as st
-from scipy.stats import norm
+
+from utils.calculations import calculate_mde_for_proportion
 
 
 st.set_page_config(page_title="Калькулятор MDE", page_icon="📏")
 
 st.title("Калькулятор MDE")
 st.subheader(
-    "Калькулятор помогает понять, какой минимальный эффект можно детектировать при текущем трафике и длительности теста."
+    "Калькулятор помогает понять, какой минимальный эффект можно детектировать при текущей базе и длительности теста."
 )
 
 with st.form("mde_calculator_form"):
-    metric = st.selectbox(
-        "Метрика",
+    experiment_type = st.selectbox(
+        "Тип эксперимента",
         (
-            "Конверсия в регистрацию",
-            "Конверсия в retention (ret3+)",
+            "Лендинг / регистрация",
+            "Пресеты / посадка в продукт",
         ),
     )
-    sessions = st.number_input(
-        "Сессии в месяц",
-        min_value=1,
-        value=30000,
-        step=1000,
-    )
-    regs = st.number_input(
-        "Регистрации в месяц",
-        min_value=1,
-        value=3000,
-        step=100,
-    )
-    ret_l3 = st.number_input(
-        "Retention ret3+ в месяц",
-        min_value=0,
-        value=300,
-        step=10,
-    )
+
+    if experiment_type == "Лендинг / регистрация":
+        sessions = st.number_input(
+            "Сессии в месяц",
+            min_value=1,
+            value=30000,
+            step=1000,
+        )
+        regs = st.number_input(
+            "Регистрации в месяц",
+            min_value=1,
+            value=3000,
+            step=100,
+        )
+        ret_l3 = None
+    else:
+        regs = st.number_input(
+            "Регистрации в месяц",
+            min_value=1,
+            value=3000,
+            step=100,
+        )
+        ret_l3 = st.number_input(
+            "Retention ret3+ в месяц",
+            min_value=0,
+            value=300,
+            step=10,
+        )
+        sessions = None
+
     test_months = st.number_input(
         "Длительность теста (в месяцах)",
         min_value=1,
@@ -65,16 +76,6 @@ with st.form("mde_calculator_form"):
 if submitted:
     errors = []
 
-    if sessions <= 0:
-        errors.append("Сессии в месяц должны быть больше 0.")
-    if regs <= 0:
-        errors.append("Регистрации в месяц должны быть больше 0.")
-    if ret_l3 < 0:
-        errors.append("Retention ret3+ в месяц не может быть отрицательным.")
-    if regs > sessions:
-        errors.append("Регистрации в месяц не могут превышать число сессий в месяц.")
-    if ret_l3 > regs:
-        errors.append("Retention ret3+ в месяц не может превышать число регистраций в месяц.")
     if not 0 < alpha < 1:
         errors.append("Параметр alpha должен быть в диапазоне (0, 1).")
     if not 0 < power < 1:
@@ -82,23 +83,44 @@ if submitted:
     if test_months <= 0:
         errors.append("Длительность теста должна быть больше 0.")
 
-    regs_conv = regs / sessions if sessions else 0
-    ret_l3_regs_conv = ret_l3 / regs if regs else 0
+    if experiment_type == "Лендинг / регистрация":
+        if sessions <= 0:
+            errors.append("Сессии в месяц должны быть больше 0.")
+        if regs <= 0:
+            errors.append("Регистрации в месяц должны быть больше 0.")
+        if regs > sessions:
+            errors.append("Регистрации в месяц не могут превышать число сессий в месяц.")
 
-    if metric == "Конверсия в регистрацию":
-        p = regs_conv
+        baseline_rate = regs / sessions if sessions else 0
         base_per_month = sessions
-        metric_name = "Конверсия в регистрацию"
+        baseline_label = "Текущая конверсия в регистрацию"
+        base_label = "База для теста в месяц"
+        explanation = (
+            "Для лендинговых тестов основной метрикой планирования является конверсия "
+            "в регистрацию. Retention можно анализировать дополнительно как downstream-метрику."
+        )
     else:
-        p = ret_l3_regs_conv
+        if regs <= 0:
+            errors.append("Регистрации в месяц должны быть больше 0.")
+        if ret_l3 < 0:
+            errors.append("Retention ret3+ в месяц не может быть отрицательным.")
+        if ret_l3 > regs:
+            errors.append("Retention ret3+ в месяц не может превышать число регистраций в месяц.")
+
+        baseline_rate = ret_l3 / regs if regs else 0
         base_per_month = regs
-        metric_name = "Конверсия в retention (ret3+)"
+        baseline_label = "Текущий retention (ret3+)"
+        base_label = "База для теста в месяц"
+        explanation = (
+            "Для тестов пресетов / посадки в продукт основной метрикой планирования "
+            "является retention ret3+, так как изменения влияют на продуктовую посадку пользователя."
+        )
 
     n_total = base_per_month * test_months
     n_per_group = n_total / 2
 
-    if p <= 0:
-        errors.append("Текущая конверсия метрики должна быть больше 0.")
+    if baseline_rate <= 0:
+        errors.append("Базовая метрика должна быть больше 0.")
     if n_per_group <= 0:
         errors.append("Число наблюдений на группу должно быть больше 0.")
 
@@ -106,31 +128,26 @@ if submitted:
         for error in errors:
             st.error(error)
     else:
-        z_alpha = norm.ppf(1 - alpha / 2)
-        z_power = norm.ppf(power)
-        mde = (z_alpha + z_power) * math.sqrt(2 * p * (1 - p) / n_per_group)
-
-        uplift_pct = (mde / p) * 100
-        p_detectable = p + mde
+        mde, detectable_rate, uplift_pct = calculate_mde_for_proportion(
+            baseline_rate=baseline_rate,
+            n_per_group=n_per_group,
+            alpha=alpha,
+            power=power,
+        )
 
         col1, col2 = st.columns(2)
         col3, col4 = st.columns(2)
         col5, col6 = st.columns(2)
 
-        col1.metric("Текущая конверсия метрики", f"{p:.2%}")
-        col2.metric("База для теста в месяц", f"{base_per_month:,}".replace(",", " "))
+        col1.metric(baseline_label, f"{baseline_rate:.2%}")
+        col2.metric(base_label, f"{base_per_month:,}".replace(",", " "))
         col3.metric("Наблюдений на группу", f"{n_per_group:,.0f}".replace(",", " "))
         col4.metric("MDE (в п.п.)", f"{mde * 100:.2f}")
         col5.metric("Relative uplift (%)", f"{uplift_pct:.2f}%")
         col6.metric(
             "Детектируемый рост метрики",
-            f"{p:.2%} → {p_detectable:.2%}",
+            f"{baseline_rate:.2%} → {detectable_rate:.2%}",
         )
 
-        st.caption(
-            f"Выбранная метрика: {metric_name}. Расчет выполнен для двух равных групп 50/50."
-        )
-        st.success(
-            "При текущем трафике и длительности теста вы сможете надежно "
-            f"детектировать эффекты не меньше чем {mde * 100:.2f} п.п."
-        )
+        st.caption("Расчет выполнен для двух равных групп 50/50.")
+        st.info(explanation)

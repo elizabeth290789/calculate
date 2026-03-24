@@ -27,3 +27,21 @@ def calculate_sample_size_per_group(
 
     n = numerator / denominator
     return math.ceil(n), p2
+
+
+def calculate_mde_for_proportion(
+    baseline_rate: float,
+    n_per_group: float,
+    alpha: float = 0.05,
+    power: float = 0.8,
+) -> tuple[float, float, float]:
+    z_alpha = norm.ppf(1 - alpha / 2)
+    z_power = norm.ppf(power)
+
+    mde = (z_alpha + z_power) * math.sqrt(
+        2 * baseline_rate * (1 - baseline_rate) / n_per_group
+    )
+    detectable_rate = baseline_rate + mde
+    uplift_pct = (mde / baseline_rate) * 100
+
+    return mde, detectable_rate, uplift_pct
