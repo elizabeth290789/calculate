@@ -45,3 +45,40 @@ def calculate_mde_for_proportion(
     uplift_pct = (mde / baseline_rate) * 100
 
     return mde, detectable_rate, uplift_pct
+
+
+def calculate_two_proportion_z_test(
+    n_a: int,
+    success_a: int,
+    n_b: int,
+    success_b: int,
+    alpha: float,
+) -> dict[str, float]:
+    p_a = success_a / n_a
+    p_b = success_b / n_b
+    diff = p_b - p_a
+
+    p_pool = (success_a + success_b) / (n_a + n_b)
+    se_pool = math.sqrt(p_pool * (1 - p_pool) * (1 / n_a + 1 / n_b))
+    if se_pool == 0:
+        raise ValueError(
+            "Стандартная ошибка по pooled-оценке равна 0. Z-статистику невозможно вычислить."
+        )
+
+    z_stat = diff / se_pool
+    p_value = 2 * (1 - norm.cdf(abs(z_stat)))
+
+    z_crit = norm.ppf(1 - alpha / 2)
+    se_unpooled = math.sqrt(p_a * (1 - p_a) / n_a + p_b * (1 - p_b) / n_b)
+    ci_low = diff - z_crit * se_unpooled
+    ci_high = diff + z_crit * se_unpooled
+
+    return {
+        "p_a": p_a,
+        "p_b": p_b,
+        "diff": diff,
+        "z_stat": z_stat,
+        "p_value": p_value,
+        "ci_low": ci_low,
+        "ci_high": ci_high,
+    }
