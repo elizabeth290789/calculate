@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from scipy import stats
 from scipy.stats import norm
 
 
@@ -78,6 +79,66 @@ def calculate_two_proportion_z_test(
         "p_b": p_b,
         "diff": diff,
         "z_stat": z_stat,
+        "p_value": p_value,
+        "ci_low": ci_low,
+        "ci_high": ci_high,
+    }
+
+
+def welch_ttest_from_stats(
+    mean_a: float,
+    std_a: float,
+    n_a: int,
+    mean_b: float,
+    std_b: float,
+    n_b: int,
+    alpha: float = 0.05,
+) -> dict[str, float]:
+    if n_a <= 1 or n_b <= 1:
+        raise ValueError("Размер групп должен быть больше 1.")
+    if mean_a < 0 or mean_b < 0:
+        raise ValueError("ARPU не может быть отрицательным.")
+    if std_a < 0 or std_b < 0:
+        raise ValueError("Стандартное отклонение не может быть отрицательным.")
+    if not 0 < alpha < 1:
+        raise ValueError("alpha должен быть между 0 и 1.")
+
+    t_stat, p_value = stats.ttest_ind_from_stats(
+        mean1=mean_b,
+        std1=std_b,
+        nobs1=n_b,
+        mean2=mean_a,
+        std2=std_a,
+        nobs2=n_a,
+        equal_var=False,
+    )
+
+    se = np.sqrt((std_a**2 / n_a) + (std_b**2 / n_b))
+
+    df_num = (std_a**2 / n_a + std_b**2 / n_b) ** 2
+    df_den = ((std_a**2 / n_a) ** 2) / (n_a - 1) + ((std_b**2 / n_b) ** 2) / (n_b - 1)
+    if df_den == 0:
+        raise ValueError(
+            "Не удалось вычислить степени свободы для Welch t-test (деление на 0)."
+        )
+
+    df = df_num / df_den
+    t_crit = stats.t.ppf(1 - alpha / 2, df)
+
+    diff = mean_b - mean_a
+    ci_low = diff - t_crit * se
+    ci_high = diff + t_crit * se
+
+    uplift_pct = np.nan
+    if mean_a != 0:
+        uplift_pct = diff / mean_a * 100
+
+    return {
+        "mean_a": mean_a,
+        "mean_b": mean_b,
+        "diff": diff,
+        "uplift_pct": uplift_pct,
+        "t_stat": t_stat,
         "p_value": p_value,
         "ci_low": ci_low,
         "ci_high": ci_high,
