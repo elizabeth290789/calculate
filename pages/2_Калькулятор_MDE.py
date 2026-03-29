@@ -61,47 +61,52 @@ EXPERIMENT_CONFIG = {
     },
 }
 
-with st.form("mde_calculator_form"):
-    experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
-    config = EXPERIMENT_CONFIG[experiment_type]
+experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
 
-    base_count = st.number_input(
-        config["base_label"],
-        min_value=1,
-        value=config["base_default"],
-        step=config["base_step"],
-    )
-    success_count = st.number_input(
-        config["success_label"],
-        min_value=0,
-        value=config["success_default"],
-        step=config["success_step"],
-    )
+if experiment_type == "Лендинг / регистрация":
+    config = EXPERIMENT_CONFIG["Лендинг / регистрация"]
+elif experiment_type == "Пресеты / посадка в продукт":
+    config = EXPERIMENT_CONFIG["Пресеты / посадка в продукт"]
+else:
+    config = EXPERIMENT_CONFIG["Покупки"]
 
-    test_months = st.number_input(
-        "Длительность теста (в месяцах)",
-        min_value=1,
-        value=1,
-        step=1,
-    )
-    alpha = st.number_input(
-        "alpha",
-        min_value=0.0001,
-        max_value=0.9999,
-        value=0.05,
-        step=0.01,
-        format="%g",
-    )
-    power = st.number_input(
-        "power",
-        min_value=0.0001,
-        max_value=0.9999,
-        value=0.8,
-        step=0.01,
-        format="%g",
-    )
+base_count = st.number_input(
+    config["base_label"],
+    min_value=1,
+    value=config["base_default"],
+    step=config["base_step"],
+)
+success_count = st.number_input(
+    config["success_label"],
+    min_value=0,
+    value=config["success_default"],
+    step=config["success_step"],
+)
 
-    submitted = st.form_submit_button("Рассчитать", use_container_width=True)
+test_months = st.number_input(
+    "Длительность теста (в месяцах)",
+    min_value=1,
+    value=1,
+    step=1,
+)
+alpha = st.number_input(
+    "alpha",
+    min_value=0.0001,
+    max_value=0.9999,
+    value=0.05,
+    step=0.01,
+    format="%g",
+)
+power = st.number_input(
+    "power",
+    min_value=0.0001,
+    max_value=0.9999,
+    value=0.8,
+    step=0.01,
+    format="%g",
+)
+
+submitted = st.button("Рассчитать", use_container_width=True)
 
 if submitted:
     errors = []
