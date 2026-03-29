@@ -21,6 +21,7 @@ with st.form("sample_size_form"):
         (
             "Лендинг / регистрация",
             "Пресеты / посадка в продукт",
+            "Покупки",
         ),
     )
 
@@ -42,7 +43,7 @@ with st.form("sample_size_form"):
         control_label = "Конверсия control"
         treatment_label = "Конверсия treatment"
         explanation = "Для лендинговых тестов расчет выборки строится по конверсии в регистрацию."
-    else:
+    elif experiment_type == "Пресеты / посадка в продукт":
         baseline_input = st.number_input(
             "Базовый retention ret3+ (%)",
             min_value=0.0,
@@ -60,6 +61,27 @@ with st.form("sample_size_form"):
         control_label = "Retention control"
         treatment_label = "Retention treatment"
         explanation = "Для тестов пресетов / посадки в продукт расчет выборки строится по retention ret3+."
+    else:
+        baseline_input = st.number_input(
+            "Базовая конверсия в покупку (%)",
+            min_value=0.0,
+            max_value=100.0,
+            value=10.0,
+            step=0.1,
+            format="%g",
+        )
+        daily_base = st.number_input(
+            "Среднее число регистраций в день",
+            min_value=1,
+            value=100,
+            step=10,
+        )
+        control_label = "Конверсия control"
+        treatment_label = "Конверсия treatment"
+        explanation = (
+            "Для тестов покупок расчет выборки строится по конверсии в покупку "
+            "(покупатели / регистрации)."
+        )
 
     p1 = baseline_input / 100
     mde_pp = st.number_input(
@@ -99,8 +121,14 @@ with st.form("sample_size_form"):
 if submitted:
     errors = []
 
-    if not 0 <= baseline_input <= 100:
+    if experiment_type == "Покупки":
+        if not 0 < p1 < 1:
+            errors.append(
+                "Базовая конверсия в покупку должна быть больше 0% и меньше 100%."
+            )
+    elif not 0 <= baseline_input <= 100:
         errors.append("Базовая метрика должна быть в диапазоне от 0 до 100%.")
+
     if not 0 < alpha < 1:
         errors.append("Параметр alpha должен быть больше 0 и меньше 1.")
     if not 0 < power < 1:
@@ -113,9 +141,9 @@ if submitted:
         errors.append("Доля трафика, идущая в эксперимент, должна быть больше 0 и не превышать 1.")
 
     p2 = p1 + mde_pp / 100
-    if p2 > 1:
+    if p2 >= 1:
         errors.append(
-            "Метрика treatment (p2 = p1 + MDE) не должна превышать 100%. Уменьшите p1 или MDE."
+            "Метрика treatment (p2 = p1 + MDE) должна быть меньше 100%. Уменьшите p1 или MDE."
         )
 
     if errors:

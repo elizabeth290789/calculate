@@ -16,6 +16,7 @@ with st.form("mde_calculator_form"):
         (
             "Лендинг / регистрация",
             "Пресеты / посадка в продукт",
+            "Покупки",
         ),
     )
 
@@ -33,7 +34,8 @@ with st.form("mde_calculator_form"):
             step=100,
         )
         ret_l3 = None
-    else:
+        buyers = None
+    elif experiment_type == "Пресеты / посадка в продукт":
         regs = st.number_input(
             "Регистрации в месяц",
             min_value=1,
@@ -47,6 +49,22 @@ with st.form("mde_calculator_form"):
             step=10,
         )
         sessions = None
+        buyers = None
+    else:
+        regs = st.number_input(
+            "Регистрации в месяц",
+            min_value=1,
+            value=3000,
+            step=100,
+        )
+        buyers = st.number_input(
+            "Покупатели в месяц",
+            min_value=0,
+            value=300,
+            step=10,
+        )
+        sessions = None
+        ret_l3 = None
 
     test_months = st.number_input(
         "Длительность теста (в месяцах)",
@@ -99,7 +117,7 @@ if submitted:
             "Для лендинговых тестов основной метрикой планирования является конверсия "
             "в регистрацию. Retention можно анализировать дополнительно как downstream-метрику."
         )
-    else:
+    elif experiment_type == "Пресеты / посадка в продукт":
         if regs <= 0:
             errors.append("Регистрации в месяц должны быть больше 0.")
         if ret_l3 < 0:
@@ -114,6 +132,22 @@ if submitted:
         explanation = (
             "Для тестов пресетов / посадки в продукт основной метрикой планирования "
             "является retention ret3+, так как изменения влияют на продуктовую посадку пользователя."
+        )
+    else:
+        if regs <= 0:
+            errors.append("Регистрации в месяц должны быть больше 0.")
+        if buyers < 0:
+            errors.append("Покупатели в месяц не могут быть отрицательными.")
+        if buyers > regs:
+            errors.append("Покупатели в месяц не могут превышать число регистраций в месяц.")
+
+        baseline_rate = buyers / regs if regs else 0
+        base_per_month = regs
+        baseline_label = "Текущая конверсия в покупку"
+        base_label = "База для теста в месяц (registrations)"
+        explanation = (
+            "Для тестов покупок расчет MDE строится по конверсии в покупку "
+            "(покупатели / регистрации)."
         )
 
     n_total = base_per_month * test_months
