@@ -143,3 +143,47 @@ def welch_ttest_from_stats(
         "ci_low": ci_low,
         "ci_high": ci_high,
     }
+
+
+
+def calculate_srm_chi_square(
+    observed: list[int],
+    expected_shares: list[float],
+) -> dict[str, float | list[float]]:
+    if len(observed) != len(expected_shares):
+        raise ValueError("Количество наблюдаемых значений и ожидаемых долей должно совпадать.")
+    if len(observed) < 2:
+        raise ValueError("Для SRM-проверки нужно как минимум 2 группы.")
+
+    if any(value < 0 for value in observed):
+        raise ValueError("Наблюдаемые размеры групп не могут быть отрицательными.")
+    if any(share <= 0 for share in expected_shares):
+        raise ValueError("Ожидаемые доли должны быть больше 0.")
+
+    total_share = sum(expected_shares)
+    if not math.isclose(total_share, 1.0, rel_tol=0.0, abs_tol=1e-6):
+        raise ValueError("Сумма ожидаемых долей должна быть равна 1.")
+
+    sample_size = sum(observed)
+    if sample_size == 0:
+        raise ValueError("Общий размер выборки равен 0. Невозможно выполнить SRM-проверку.")
+
+    expected_sizes = [sample_size * share for share in expected_shares]
+    if any(expected == 0 for expected in expected_sizes):
+        raise ValueError("Ожидаемый размер выборки для каждой группы должен быть больше 0.")
+
+    chi2_stat = sum(
+        (obs - exp) ** 2 / exp for obs, exp in zip(observed, expected_sizes, strict=True)
+    )
+    degrees_of_freedom = len(observed) - 1
+    p_value = 1 - stats.chi2.cdf(chi2_stat, degrees_of_freedom)
+    diffs = [obs - exp for obs, exp in zip(observed, expected_sizes, strict=True)]
+
+    return {
+        "sample_size": sample_size,
+        "expected_sizes": expected_sizes,
+        "diffs": diffs,
+        "chi2_stat": chi2_stat,
+        "degrees_of_freedom": degrees_of_freedom,
+        "p_value": p_value,
+    }
