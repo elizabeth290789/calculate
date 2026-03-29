@@ -5,21 +5,48 @@ from utils.calculations import calculate_two_proportion_z_test
 
 st.set_page_config(page_title="Статкритерий для конверсий", page_icon="🧪")
 
+METRIC_CONFIG = {
+    "Конверсия в регистрацию": {
+        "title": "конверсии в регистрацию",
+        "n_a_label": "Сессий в control",
+        "success_a_label": "Регистраций в control",
+        "n_b_label": "Сессий в test",
+        "success_b_label": "Регистраций в test",
+    },
+    "Retention (ret3+)": {
+        "title": "retention (ret3+)",
+        "n_a_label": "Регистраций в control",
+        "success_a_label": "Retention ret3+ в control",
+        "n_b_label": "Регистраций в test",
+        "success_b_label": "Retention ret3+ в test",
+    },
+    "Конверсия в покупку": {
+        "title": "конверсии в покупку",
+        "n_a_label": "Регистраций в control",
+        "success_a_label": "Покупателей в control",
+        "n_b_label": "Регистраций в test",
+        "success_b_label": "Покупателей в test",
+    },
+}
+
 st.title("Статкритерий для конверсий")
+conversion_type = st.selectbox("Тип конверсии", options=list(METRIC_CONFIG.keys()))
+selected_metric = METRIC_CONFIG[conversion_type]
+
 st.subheader(
-    "Сравнение двух конверсий с помощью двустороннего z-теста для двух пропорций."
+    f"Сравнение двух {selected_metric['title']} с помощью двустороннего z-теста для двух пропорций."
 )
 
 with st.form("conversion_z_test_form"):
     st.markdown("### Control")
     n_a = st.number_input(
-        "Пользователей в control",
+        selected_metric["n_a_label"],
         min_value=1,
         value=15000,
         step=100,
     )
     success_a = st.number_input(
-        "Конверсий в control",
+        selected_metric["success_a_label"],
         min_value=0,
         value=1500,
         step=10,
@@ -27,13 +54,13 @@ with st.form("conversion_z_test_form"):
 
     st.markdown("### Test")
     n_b = st.number_input(
-        "Пользователей в test",
+        selected_metric["n_b_label"],
         min_value=1,
         value=15000,
         step=100,
     )
     success_b = st.number_input(
-        "Конверсий в test",
+        selected_metric["success_b_label"],
         min_value=0,
         value=1650,
         step=10,
@@ -55,17 +82,21 @@ if submitted:
     errors = []
 
     if n_a <= 0:
-        errors.append("Число пользователей в control должно быть больше 0.")
+        errors.append(f"{selected_metric['n_a_label']} должно быть больше 0.")
     if n_b <= 0:
-        errors.append("Число пользователей в test должно быть больше 0.")
+        errors.append(f"{selected_metric['n_b_label']} должно быть больше 0.")
     if success_a < 0:
-        errors.append("Число конверсий в control не может быть отрицательным.")
+        errors.append(f"{selected_metric['success_a_label']} не может быть отрицательным.")
     if success_b < 0:
-        errors.append("Число конверсий в test не может быть отрицательным.")
+        errors.append(f"{selected_metric['success_b_label']} не может быть отрицательным.")
     if success_a > n_a:
-        errors.append("Число конверсий в control не может превышать число пользователей в control.")
+        errors.append(
+            f"{selected_metric['success_a_label']} не может превышать {selected_metric['n_a_label'].lower()}."
+        )
     if success_b > n_b:
-        errors.append("Число конверсий в test не может превышать число пользователей в test.")
+        errors.append(
+            f"{selected_metric['success_b_label']} не может превышать {selected_metric['n_b_label'].lower()}."
+        )
     if not 0 < alpha < 1:
         errors.append("Параметр alpha должен быть в диапазоне (0, 1).")
 
@@ -129,18 +160,18 @@ if submitted:
 
             if is_significant and diff > 0:
                 st.success(
-                    "Разница статистически значима: test показывает более высокую конверсию, чем control."
+                    f"Разница статистически значима: test показывает более высокую {selected_metric['title']}, чем control."
                 )
             elif is_significant and diff < 0:
                 st.warning(
-                    "Разница статистически значима: test показывает более низкую конверсию, чем control."
+                    f"Разница статистически значима: test показывает более низкую {selected_metric['title']}, чем control."
                 )
             else:
                 st.info(
-                    "Статистически значимого различия между группами не обнаружено."
+                    f"Статистически значимого различия по {selected_metric['title']} между группами не обнаружено."
                 )
 
             st.caption(
-                "Используется двусторонний z-тест для сравнения двух пропорций. "
-                "Доверительный интервал рассчитан для разницы конверсий (test - control)."
+                "Для бинарных метрик (конверсия в регистрацию, retention, конверсия в покупку) "
+                "используется двусторонний z-тест для двух пропорций."
             )
