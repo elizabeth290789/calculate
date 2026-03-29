@@ -15,73 +15,66 @@ st.subheader(
     "Калькулятор расчёта выборки и длительности A/B-теста для двух равных групп 50/50"
 )
 
-with st.form("sample_size_form"):
-    experiment_type = st.selectbox(
-        "Тип эксперимента",
-        (
-            "Лендинг / регистрация",
-            "Пресеты / посадка в продукт",
-            "Покупки",
-        ),
-    )
-
-    if experiment_type == "Лендинг / регистрация":
-        baseline_input = st.number_input(
-            "Базовая конверсия в регистрацию (%)",
-            min_value=0.0,
-            max_value=100.0,
-            value=7.0,
-            step=0.1,
-            format="%g",
-        )
-        daily_base = st.number_input(
-            "Среднее число пользователей в день",
-            min_value=1,
-            value=1000,
-            step=100,
-        )
-        control_label = "Конверсия control"
-        treatment_label = "Конверсия treatment"
-        explanation = "Для лендинговых тестов расчет выборки строится по конверсии в регистрацию."
-    elif experiment_type == "Пресеты / посадка в продукт":
-        baseline_input = st.number_input(
-            "Базовый retention ret3+ (%)",
-            min_value=0.0,
-            max_value=100.0,
-            value=10.0,
-            step=0.1,
-            format="%g",
-        )
-        daily_base = st.number_input(
-            "Среднее число регистраций в день",
-            min_value=1,
-            value=100,
-            step=10,
-        )
-        control_label = "Retention control"
-        treatment_label = "Retention treatment"
-        explanation = "Для тестов пресетов / посадки в продукт расчет выборки строится по retention ret3+."
-    else:
-        baseline_input = st.number_input(
-            "Базовая конверсия в покупку (%)",
-            min_value=0.0,
-            max_value=100.0,
-            value=10.0,
-            step=0.1,
-            format="%g",
-        )
-        daily_base = st.number_input(
-            "Среднее число регистраций в день",
-            min_value=1,
-            value=100,
-            step=10,
-        )
-        control_label = "Конверсия control"
-        treatment_label = "Конверсия treatment"
-        explanation = (
+EXPERIMENT_CONFIG = {
+    "Лендинг / регистрация": {
+        "baseline_label": "Базовая конверсия в регистрацию (%)",
+        "baseline_default": 7.0,
+        "volume_label": "Среднее число пользователей в день",
+        "volume_default": 1000,
+        "volume_step": 100,
+        "control_label": "Конверсия control",
+        "treatment_label": "Конверсия treatment",
+        "explanation": "Для лендинговых тестов расчет выборки строится по конверсии в регистрацию.",
+        "volume_kind": "users",
+        "baseline_error": "Базовая конверсия в регистрацию должна быть в диапазоне от 0 до 100%.",
+    },
+    "Пресеты / посадка в продукт": {
+        "baseline_label": "Базовый retention ret3+ (%)",
+        "baseline_default": 10.0,
+        "volume_label": "Среднее число регистраций в день",
+        "volume_default": 100,
+        "volume_step": 10,
+        "control_label": "Retention control",
+        "treatment_label": "Retention treatment",
+        "explanation": "Для тестов пресетов / посадки в продукт расчет выборки строится по retention ret3+.",
+        "volume_kind": "registrations",
+        "baseline_error": "Базовый retention ret3+ должен быть в диапазоне от 0 до 100%.",
+    },
+    "Покупки": {
+        "baseline_label": "Базовая конверсия в покупку (%)",
+        "baseline_default": 10.0,
+        "volume_label": "Среднее число регистраций в день",
+        "volume_default": 100,
+        "volume_step": 10,
+        "control_label": "Конверсия control",
+        "treatment_label": "Конверсия treatment",
+        "explanation": (
             "Для тестов покупок расчет выборки строится по конверсии в покупку "
             "(покупатели / регистрации)."
-        )
+        ),
+        "volume_kind": "registrations",
+        "baseline_error": "Базовая конверсия в покупку должна быть больше 0% и меньше 100%.",
+    },
+}
+
+with st.form("sample_size_form"):
+    experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
+    config = EXPERIMENT_CONFIG[experiment_type]
+
+    baseline_input = st.number_input(
+        config["baseline_label"],
+        min_value=0.0,
+        max_value=100.0,
+        value=config["baseline_default"],
+        step=0.1,
+        format="%g",
+    )
+    daily_observations = st.number_input(
+        config["volume_label"],
+        min_value=1,
+        value=config["volume_default"],
+        step=config["volume_step"],
+    )
 
     p1 = baseline_input / 100
     mde_pp = st.number_input(
@@ -121,13 +114,17 @@ with st.form("sample_size_form"):
 if submitted:
     errors = []
 
+    users_per_day = daily_observations if config["volume_kind"] == "users" else None
+    registrations_per_day = (
+        daily_observations if config["volume_kind"] == "registrations" else None
+    )
+    daily_base = users_per_day if users_per_day is not None else registrations_per_day
+
     if experiment_type == "Покупки":
         if not 0 < p1 < 1:
-            errors.append(
-                "Базовая конверсия в покупку должна быть больше 0% и меньше 100%."
-            )
+            errors.append(config["baseline_error"])
     elif not 0 <= baseline_input <= 100:
-        errors.append("Базовая метрика должна быть в диапазоне от 0 до 100%.")
+        errors.append(config["baseline_error"])
 
     if not 0 < alpha < 1:
         errors.append("Параметр alpha должен быть больше 0 и меньше 1.")
@@ -166,8 +163,8 @@ if submitted:
         col3, col4 = st.columns(2)
         col5, col6 = st.columns(2)
 
-        col1.metric(control_label, f"{p1:.2%}")
-        col2.metric(treatment_label, f"{p2:.2%}")
+        col1.metric(config["control_label"], f"{p1:.2%}")
+        col2.metric(config["treatment_label"], f"{p2:.2%}")
         col3.metric(
             "Relative uplift (%)",
             "∞" if math.isinf(uplift_pct) else f"{uplift_pct:.2f}%",
@@ -183,4 +180,4 @@ if submitted:
         col6.metric("Оценочная длительность теста (дни)", f"{duration_days}")
 
         st.caption("Расчет выполнен для двух равных групп 50/50.")
-        st.info(explanation)
+        st.info(config["explanation"])

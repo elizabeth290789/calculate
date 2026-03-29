@@ -10,61 +10,73 @@ st.subheader(
     "Калькулятор помогает понять, какой минимальный эффект можно детектировать при текущей базе и длительности теста."
 )
 
-with st.form("mde_calculator_form"):
-    experiment_type = st.selectbox(
-        "Тип эксперимента",
-        (
-            "Лендинг / регистрация",
-            "Пресеты / посадка в продукт",
-            "Покупки",
+EXPERIMENT_CONFIG = {
+    "Лендинг / регистрация": {
+        "base_label": "Сессии в месяц",
+        "base_default": 30000,
+        "base_step": 1000,
+        "success_label": "Регистрации в месяц",
+        "success_default": 3000,
+        "success_step": 100,
+        "baseline_label": "Текущая конверсия в регистрацию",
+        "base_metric_label": "База для теста в месяц",
+        "explanation": (
+            "Для лендинговых тестов основной метрикой планирования является конверсия "
+            "в регистрацию."
         ),
-    )
+        "success_error_negative": "Регистрации в месяц должны быть больше 0.",
+        "success_error_over": "Регистрации в месяц не могут превышать число сессий в месяц.",
+    },
+    "Пресеты / посадка в продукт": {
+        "base_label": "Регистрации в месяц",
+        "base_default": 3000,
+        "base_step": 100,
+        "success_label": "Retention ret3+ в месяц",
+        "success_default": 300,
+        "success_step": 10,
+        "baseline_label": "Текущий retention (ret3+)",
+        "base_metric_label": "База для теста в месяц",
+        "explanation": (
+            "Для тестов пресетов / посадки в продукт основной метрикой планирования "
+            "является retention ret3+."
+        ),
+        "success_error_negative": "Retention ret3+ в месяц не может быть отрицательным.",
+        "success_error_over": "Retention ret3+ в месяц не может превышать число регистраций в месяц.",
+    },
+    "Покупки": {
+        "base_label": "Регистрации в месяц",
+        "base_default": 3000,
+        "base_step": 100,
+        "success_label": "Покупатели в месяц",
+        "success_default": 300,
+        "success_step": 10,
+        "baseline_label": "Текущая конверсия в покупку",
+        "base_metric_label": "База для теста в месяц",
+        "explanation": (
+            "Для тестов покупок расчет MDE строится по конверсии в покупку "
+            "(покупатели / регистрации)."
+        ),
+        "success_error_negative": "Покупатели в месяц не могут быть отрицательными.",
+        "success_error_over": "Покупатели в месяц не могут превышать число регистраций в месяц.",
+    },
+}
 
-    if experiment_type == "Лендинг / регистрация":
-        sessions = st.number_input(
-            "Сессии в месяц",
-            min_value=1,
-            value=30000,
-            step=1000,
-        )
-        regs = st.number_input(
-            "Регистрации в месяц",
-            min_value=1,
-            value=3000,
-            step=100,
-        )
-        ret_l3 = None
-        buyers = None
-    elif experiment_type == "Пресеты / посадка в продукт":
-        regs = st.number_input(
-            "Регистрации в месяц",
-            min_value=1,
-            value=3000,
-            step=100,
-        )
-        ret_l3 = st.number_input(
-            "Retention ret3+ в месяц",
-            min_value=0,
-            value=300,
-            step=10,
-        )
-        sessions = None
-        buyers = None
-    else:
-        regs = st.number_input(
-            "Регистрации в месяц",
-            min_value=1,
-            value=3000,
-            step=100,
-        )
-        buyers = st.number_input(
-            "Покупатели в месяц",
-            min_value=0,
-            value=300,
-            step=10,
-        )
-        sessions = None
-        ret_l3 = None
+with st.form("mde_calculator_form"):
+    experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
+    config = EXPERIMENT_CONFIG[experiment_type]
+
+    base_count = st.number_input(
+        config["base_label"],
+        min_value=1,
+        value=config["base_default"],
+        step=config["base_step"],
+    )
+    success_count = st.number_input(
+        config["success_label"],
+        min_value=0,
+        value=config["success_default"],
+        step=config["success_step"],
+    )
 
     test_months = st.number_input(
         "Длительность теста (в месяцах)",
@@ -101,56 +113,21 @@ if submitted:
     if test_months <= 0:
         errors.append("Длительность теста должна быть больше 0.")
 
+    if base_count <= 0:
+        errors.append(f"{config['base_label']} должны быть больше 0.")
+
     if experiment_type == "Лендинг / регистрация":
-        if sessions <= 0:
-            errors.append("Сессии в месяц должны быть больше 0.")
-        if regs <= 0:
-            errors.append("Регистрации в месяц должны быть больше 0.")
-        if regs > sessions:
-            errors.append("Регистрации в месяц не могут превышать число сессий в месяц.")
-
-        baseline_rate = regs / sessions if sessions else 0
-        base_per_month = sessions
-        baseline_label = "Текущая конверсия в регистрацию"
-        base_label = "База для теста в месяц"
-        explanation = (
-            "Для лендинговых тестов основной метрикой планирования является конверсия "
-            "в регистрацию. Retention можно анализировать дополнительно как downstream-метрику."
-        )
-    elif experiment_type == "Пресеты / посадка в продукт":
-        if regs <= 0:
-            errors.append("Регистрации в месяц должны быть больше 0.")
-        if ret_l3 < 0:
-            errors.append("Retention ret3+ в месяц не может быть отрицательным.")
-        if ret_l3 > regs:
-            errors.append("Retention ret3+ в месяц не может превышать число регистраций в месяц.")
-
-        baseline_rate = ret_l3 / regs if regs else 0
-        base_per_month = regs
-        baseline_label = "Текущий retention (ret3+)"
-        base_label = "База для теста в месяц"
-        explanation = (
-            "Для тестов пресетов / посадки в продукт основной метрикой планирования "
-            "является retention ret3+, так как изменения влияют на продуктовую посадку пользователя."
-        )
+        if success_count <= 0:
+            errors.append(config["success_error_negative"])
     else:
-        if regs <= 0:
-            errors.append("Регистрации в месяц должны быть больше 0.")
-        if buyers < 0:
-            errors.append("Покупатели в месяц не могут быть отрицательными.")
-        if buyers > regs:
-            errors.append("Покупатели в месяц не могут превышать число регистраций в месяц.")
+        if success_count < 0:
+            errors.append(config["success_error_negative"])
 
-        baseline_rate = buyers / regs if regs else 0
-        base_per_month = regs
-        baseline_label = "Текущая конверсия в покупку"
-        base_label = "База для теста в месяц (registrations)"
-        explanation = (
-            "Для тестов покупок расчет MDE строится по конверсии в покупку "
-            "(покупатели / регистрации)."
-        )
+    if success_count > base_count:
+        errors.append(config["success_error_over"])
 
-    n_total = base_per_month * test_months
+    baseline_rate = success_count / base_count if base_count else 0
+    n_total = base_count * test_months
     n_per_group = n_total / 2
 
     if baseline_rate <= 0:
@@ -173,8 +150,8 @@ if submitted:
         col3, col4 = st.columns(2)
         col5, col6 = st.columns(2)
 
-        col1.metric(baseline_label, f"{baseline_rate:.2%}")
-        col2.metric(base_label, f"{base_per_month:,}".replace(",", " "))
+        col1.metric(config["baseline_label"], f"{baseline_rate:.2%}")
+        col2.metric(config["base_metric_label"], f"{base_count:,}".replace(",", " "))
         col3.metric("Наблюдений на группу", f"{n_per_group:,.0f}".replace(",", " "))
         col4.metric("MDE (в п.п.)", f"{mde * 100:.2f}")
         col5.metric("Relative uplift (%)", f"{uplift_pct:.2f}%")
@@ -184,4 +161,4 @@ if submitted:
         )
 
         st.caption("Расчет выполнен для двух равных групп 50/50.")
-        st.info(explanation)
+        st.info(config["explanation"])
