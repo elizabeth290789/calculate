@@ -57,59 +57,58 @@ EXPERIMENT_CONFIG = {
     },
 }
 
-with st.form("sample_size_form"):
-    experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
-    config = EXPERIMENT_CONFIG[experiment_type]
+experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
+config = EXPERIMENT_CONFIG[experiment_type]
 
-    baseline_input = st.number_input(
-        config["baseline_label"],
-        min_value=0.0,
-        max_value=100.0,
-        value=config["baseline_default"],
-        step=0.1,
-        format="%g",
-    )
-    daily_observations = st.number_input(
-        config["volume_label"],
-        min_value=1,
-        value=config["volume_default"],
-        step=config["volume_step"],
-    )
+baseline_input = st.number_input(
+    config["baseline_label"],
+    min_value=0.0,
+    max_value=100.0,
+    value=config["baseline_default"],
+    step=0.1,
+    format="%g",
+)
+daily_observations = st.number_input(
+    config["volume_label"],
+    min_value=1,
+    value=config["volume_default"],
+    step=config["volume_step"],
+)
 
-    p1 = baseline_input / 100
-    mde_pp = st.number_input(
-        "MDE (п.п.)",
-        min_value=0.0001,
-        value=0.5,
-        step=0.1,
-        format="%g",
-    )
-    alpha = st.number_input(
-        "alpha",
-        min_value=0.0001,
-        max_value=0.9999,
-        value=0.05,
-        step=0.01,
-        format="%g",
-    )
-    power = st.number_input(
-        "power",
-        min_value=0.0001,
-        max_value=0.9999,
-        value=0.8,
-        step=0.01,
-        format="%g",
-    )
-    traffic_share = st.number_input(
-        "Доля трафика, идущая в эксперимент",
-        min_value=0.0,
-        max_value=1.0,
-        value=1.0,
-        step=0.05,
-        format="%g",
-    )
+p1 = baseline_input / 100
+mde_pp = st.number_input(
+    "MDE (п.п.)",
+    min_value=0.0001,
+    value=0.5,
+    step=0.1,
+    format="%g",
+)
+alpha = st.number_input(
+    "alpha",
+    min_value=0.0001,
+    max_value=0.9999,
+    value=0.05,
+    step=0.01,
+    format="%g",
+)
+power = st.number_input(
+    "power",
+    min_value=0.0001,
+    max_value=0.9999,
+    value=0.8,
+    step=0.01,
+    format="%g",
+)
+traffic_share = st.number_input(
+    "Доля трафика, идущая в эксперимент",
+    min_value=0.0,
+    max_value=1.0,
+    value=1.0,
+    step=0.05,
+    format="%g",
+)
 
-    submitted = st.form_submit_button("Рассчитать", use_container_width=True)
+submitted = st.button("Рассчитать", use_container_width=True)
 
 if submitted:
     errors = []
