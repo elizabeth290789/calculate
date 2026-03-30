@@ -1,0 +1,208 @@
+:root {
+  --bg-main: #f6f3ee;
+  --bg-elev: #fdfcf9;
+  --surface: #fffdfa;
+  --text-main: #1f1f1d;
+  --text-muted: #6a6864;
+  --border-soft: #d9d3ca;
+  --accent: #3e4a5a;
+  --success-bg: #eef4ed;
+  --success-fg: #38563f;
+  --radius-lg: 22px;
+  --radius-md: 14px;
+}
+
+html, body, [class*="css"] {
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+.stApp {
+  background: var(--bg-main);
+  color: var(--text-main);
+}
+
+.block-container {
+  max-width: 1120px;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+
+h1, h2, h3, h4 {
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+}
+
+[data-testid="stSidebar"] {
+  background: #f8f6f2;
+  border-right: 1px solid var(--border-soft);
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p {
+  color: #54514a;
+}
+
+/* Form widgets for calculator pages */
+.stNumberInput, .stSelectbox, .stTextInput, .stTextArea {
+  background: transparent;
+}
+
+.stNumberInput input,
+.stTextInput input,
+.stTextArea textarea,
+[data-baseweb="select"] > div {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 11px !important;
+}
+
+div[data-testid="stMetric"] {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+}
+
+.stButton > button {
+  border-radius: 12px;
+  border: 1px solid #34322f !important;
+  background: #2b2a28 !important;
+  color: #f9f7f3 !important;
+  font-weight: 500;
+}
+
+/* Home showcase */
+.home-shell {
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.home-divider {
+  height: 1px;
+  background: var(--border-soft);
+}
+
+.hero {
+  background: linear-gradient(180deg, #fdfbf7 0%, #fbf8f2 100%);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.8rem, 4vw, 3rem);
+}
+
+.hero-eyebrow {
+  margin: 0;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #7a7268;
+}
+
+.hero-title {
+  margin: 0.9rem 0 0;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  font-weight: 500;
+  font-size: clamp(2.1rem, 6.1vw, 4rem);
+  line-height: 1.03;
+  color: #201f1d;
+}
+
+.hero-subtitle {
+  margin: 1.2rem 0 0;
+  max-width: 720px;
+  color: #5f5a52;
+  font-size: clamp(1.02rem, 1.8vw, 1.2rem);
+  line-height: 1.56;
+}
+
+.section-head {
+  margin: 0;
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+  color: #37342f;
+}
+
+.tool-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: 1.1rem 1.05rem 1rem;
+  min-height: 245px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.tool-card:hover {
+  transform: translateY(-2px);
+  border-color: #bfb6aa;
+  box-shadow: 0 10px 24px rgba(30, 26, 20, 0.06);
+}
+
+.tool-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.tool-number {
+  font-size: 0.8rem;
+  color: #534e47;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.tool-status {
+  border: 1px solid #ced8cd;
+  background: var(--success-bg);
+  color: var(--success-fg);
+  border-radius: 999px;
+  padding: 0.18rem 0.62rem;
+  font-size: 0.73rem;
+  line-height: 1.2;
+}
+
+.tool-title {
+  margin: 0;
+  color: #242220;
+  font-size: 1.03rem;
+  line-height: 1.35;
+}
+
+.tool-description {
+  margin: 0.7rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.91rem;
+  line-height: 1.52;
+}
+
+[data-testid="stPageLink"] a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bcb4a8;
+  color: #332f2b !important;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  text-decoration: none !important;
+  background: #faf7f2;
+  font-size: 0.86rem;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+[data-testid="stPageLink"] a:hover {
+  background: #f1ece4;
+  border-color: #a89f92;
+}
+
+@media (max-width: 900px) {
+  .block-container {
+    padding-top: 1.3rem;
+  }
+  .tool-card {
+    min-height: 220px;
+  }
+}
