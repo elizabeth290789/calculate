@@ -1,13 +1,13 @@
 import streamlit as st
 
 from utils.calculations import calculate_mde_for_proportion
+from utils.ui import configure_page, render_tool_header
 
 
-st.set_page_config(page_title="Калькулятор MDE", page_icon="📏")
-
-st.title("Калькулятор MDE")
-st.subheader(
-    "Калькулятор помогает понять, какой минимальный эффект можно детектировать при текущей базе и длительности теста."
+configure_page(title="Калькулятор MDE", icon="📏")
+render_tool_header(
+    "Калькулятор MDE",
+    "Оценка минимально детектируемого эффекта при текущей базе и длительности теста.",
 )
 
 EXPERIMENT_CONFIG = {
@@ -61,52 +61,53 @@ EXPERIMENT_CONFIG = {
     },
 }
 
-experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
+left, right = st.columns([1.1, 1], gap="large")
 
-if experiment_type == "Лендинг / регистрация":
-    config = EXPERIMENT_CONFIG["Лендинг / регистрация"]
-elif experiment_type == "Пресеты / посадка в продукт":
-    config = EXPERIMENT_CONFIG["Пресеты / посадка в продукт"]
-else:
-    config = EXPERIMENT_CONFIG["Покупки"]
+with left:
+    st.markdown("#### Параметры")
+    experiment_type = st.selectbox("Тип эксперимента", tuple(EXPERIMENT_CONFIG.keys()))
+    config = EXPERIMENT_CONFIG[experiment_type]
 
-base_count = st.number_input(
-    config["base_label"],
-    min_value=1,
-    value=config["base_default"],
-    step=config["base_step"],
-)
-success_count = st.number_input(
-    config["success_label"],
-    min_value=0,
-    value=config["success_default"],
-    step=config["success_step"],
-)
+    base_count = st.number_input(
+        config["base_label"],
+        min_value=1,
+        value=config["base_default"],
+        step=config["base_step"],
+    )
+    success_count = st.number_input(
+        config["success_label"],
+        min_value=0,
+        value=config["success_default"],
+        step=config["success_step"],
+    )
 
-test_months = st.number_input(
-    "Длительность теста (в месяцах)",
-    min_value=1,
-    value=1,
-    step=1,
-)
-alpha = st.number_input(
-    "alpha",
-    min_value=0.0001,
-    max_value=0.9999,
-    value=0.05,
-    step=0.01,
-    format="%g",
-)
-power = st.number_input(
-    "power",
-    min_value=0.0001,
-    max_value=0.9999,
-    value=0.8,
-    step=0.01,
-    format="%g",
-)
+    test_months = st.number_input(
+        "Длительность теста (в месяцах)",
+        min_value=1,
+        value=1,
+        step=1,
+    )
+    alpha = st.number_input(
+        "alpha",
+        min_value=0.0001,
+        max_value=0.9999,
+        value=0.05,
+        step=0.01,
+        format="%g",
+    )
+    power = st.number_input(
+        "power",
+        min_value=0.0001,
+        max_value=0.9999,
+        value=0.8,
+        step=0.01,
+        format="%g",
+    )
 
-submitted = st.button("Рассчитать", use_container_width=True)
+    submitted = st.button("Рассчитать", use_container_width=True)
+
+with right:
+    st.markdown("#### Результаты")
 
 if submitted:
     errors = []
@@ -140,30 +141,36 @@ if submitted:
     if n_per_group <= 0:
         errors.append("Число наблюдений на группу должно быть больше 0.")
 
-    if errors:
-        for error in errors:
-            st.error(error)
-    else:
-        mde, detectable_rate, uplift_pct = calculate_mde_for_proportion(
-            baseline_rate=baseline_rate,
-            n_per_group=n_per_group,
-            alpha=alpha,
-            power=power,
-        )
+    with right:
+        if errors:
+            for error in errors:
+                st.error(error)
+        else:
+            mde, detectable_rate, uplift_pct = calculate_mde_for_proportion(
+                baseline_rate=baseline_rate,
+                n_per_group=n_per_group,
+                alpha=alpha,
+                power=power,
+            )
 
-        col1, col2 = st.columns(2)
-        col3, col4 = st.columns(2)
-        col5, col6 = st.columns(2)
+            st.markdown('<div class="result-panel">', unsafe_allow_html=True)
+            col1, col2 = st.columns(2)
+            col3, col4 = st.columns(2)
+            col5, col6 = st.columns(2)
 
-        col1.metric(config["baseline_label"], f"{baseline_rate:.2%}")
-        col2.metric(config["base_metric_label"], f"{base_count:,}".replace(",", " "))
-        col3.metric("Наблюдений на группу", f"{n_per_group:,.0f}".replace(",", " "))
-        col4.metric("MDE (в п.п.)", f"{mde * 100:.2f}")
-        col5.metric("Relative uplift (%)", f"{uplift_pct:.2f}%")
-        col6.metric(
-            "Детектируемый рост метрики",
-            f"{baseline_rate:.2%} → {detectable_rate:.2%}",
-        )
+            col1.metric(config["baseline_label"], f"{baseline_rate:.2%}")
+            col2.metric(config["base_metric_label"], f"{base_count:,}".replace(",", " "))
+            col3.metric("Наблюдений на группу", f"{n_per_group:,.0f}".replace(",", " "))
+            col4.metric("MDE (в п.п.)", f"{mde * 100:.2f}")
+            col5.metric("Relative uplift (%)", f"{uplift_pct:.2f}%")
+            col6.metric(
+                "Детектируемый рост метрики",
+                f"{baseline_rate:.2%} → {detectable_rate:.2%}",
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
 
-        st.caption("Расчет выполнен для двух равных групп 50/50.")
-        st.info(config["explanation"])
+            st.caption("Расчет выполнен для двух равных групп 50/50.")
+            st.info(config["explanation"])
+else:
+    with right:
+        st.info("Заполните параметры слева и запустите расчет.")
