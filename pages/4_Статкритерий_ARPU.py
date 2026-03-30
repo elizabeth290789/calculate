@@ -1,10 +1,14 @@
 import numpy as np
 import streamlit as st
 
+from utils.ui import apply_base_styles
+
 from utils.calculations import welch_ttest_from_stats
 
 
 st.set_page_config(page_title="Статкритерий для ARPU", page_icon="💰")
+
+apply_base_styles()
 
 st.title("Статкритерий для ARPU")
 st.subheader(

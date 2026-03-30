@@ -1,9 +1,13 @@
 import streamlit as st
 
+from utils.ui import apply_base_styles
+
 from utils.calculations import calculate_mde_for_proportion
 
 
 st.set_page_config(page_title="Калькулятор MDE", page_icon="📏")
+
+apply_base_styles()
 
 st.title("Калькулятор MDE")
 st.subheader(

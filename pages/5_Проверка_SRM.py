@@ -1,10 +1,14 @@
 import pandas as pd
 import streamlit as st
 
+from utils.ui import apply_base_styles
+
 from utils.calculations import calculate_srm_chi_square
 
 
 st.set_page_config(page_title="Проверка SRM", page_icon="⚖️")
+
+apply_base_styles()
 
 st.title("Проверка несоответствия выборочных соотношений (SRM)")
 st.subheader(
