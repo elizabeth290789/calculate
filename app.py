@@ -13,115 +13,162 @@ apply_base_styles()
 st.markdown(
     """
     <style>
+    .landing-wrap {
+        display: grid;
+        gap: 1.1rem;
+    }
+
     .hero {
-        background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
-        border: 1px solid #e5e7eb;
-        border-radius: 22px;
-        padding: 2.2rem;
-        margin-bottom: 1.8rem;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+        position: relative;
+        overflow: hidden;
+        background:
+            radial-gradient(1200px 300px at 10% -30%, rgba(59, 130, 246, 0.18), transparent 50%),
+            radial-gradient(1000px 260px at 90% -20%, rgba(99, 102, 241, 0.16), transparent 50%),
+            linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid #dbe3f3;
+        border-radius: 24px;
+        padding: clamp(1.4rem, 4vw, 2.8rem);
+        box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+        margin-bottom: 0.35rem;
     }
 
-    .hero h1 {
+    .hero-title {
         margin: 0;
-        font-size: clamp(2rem, 4vw, 2.85rem);
-        line-height: 1.15;
+        max-width: 740px;
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        line-height: 1.04;
+        letter-spacing: -0.03em;
+        color: #0b1324;
     }
 
-    .hero .sub {
-        font-size: 1.06rem;
-        color: #374151;
-        margin: 1rem 0 0.35rem;
+    .hero-subtitle {
+        margin: 1rem 0 0.45rem;
         max-width: 760px;
+        font-size: clamp(1rem, 2.2vw, 1.25rem);
+        line-height: 1.42;
+        color: #1f2937;
     }
 
-    .hero .desc {
-        font-size: 0.98rem;
-        color: #6b7280;
+    .hero-support {
         margin: 0;
+        max-width: 700px;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #4b5563;
     }
 
-    .section-title {
-        margin: 1.4rem 0 0.75rem;
-        color: #111827;
-        font-size: 1.12rem;
-        font-weight: 650;
+    .group {
+        border-top: 1px solid #dce3ef;
+        padding-top: 1rem;
+        margin-top: 0.35rem;
     }
 
-    .card {
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
+    .group h3 {
+        margin: 0 0 0.8rem;
+        font-size: 1.08rem;
+        color: #0f172a;
+        letter-spacing: -0.01em;
+    }
+
+    .tool-card {
+        background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+        border: 1px solid #d9e2f0;
         border-radius: 16px;
-        padding: 1rem 1rem 0.95rem;
-        min-height: 206px;
-        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+        padding: 0.95rem 0.95rem 0.8rem;
+        min-height: 232px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
         transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+        margin-bottom: 0.8rem;
     }
 
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
-        border-color: #d1d5db;
+    .tool-card:hover {
+        transform: translateY(-4px);
+        border-color: #bfccdf;
+        box-shadow: 0 16px 32px rgba(15, 23, 42, 0.1);
     }
 
-    .badge {
-        display: inline-block;
-        font-size: 0.75rem;
-        color: #1d4ed8;
-        background: #eff6ff;
-        border: 1px solid #dbeafe;
+    .tool-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.72rem;
+    }
+
+    .tool-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 1.55rem;
+        min-width: 1.9rem;
+        padding: 0 0.45rem;
         border-radius: 999px;
-        padding: 0.18rem 0.5rem;
-        margin-bottom: 0.75rem;
+        border: 1px solid #bfdbfe;
+        background: #eff6ff;
+        color: #1d4ed8;
+        font-weight: 700;
+        font-size: 0.78rem;
     }
 
-    .card h4 {
-        margin: 0 0 0.5rem;
+    .tool-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.14rem 0.52rem;
+        border-radius: 999px;
+        border: 1px solid #bbf7d0;
+        background: #f0fdf4;
+        color: #166534;
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
+
+    .tool-title {
+        margin: 0 0 0.45rem;
+        min-height: 2.6rem;
         font-size: 1rem;
         line-height: 1.3;
+        color: #111827;
     }
 
-    .card p {
+    .tool-desc {
+        margin: 0 0 0.9rem;
+        min-height: 3.8rem;
         color: #4b5563;
         font-size: 0.92rem;
-        min-height: 72px;
-        margin: 0 0 0.7rem;
+        line-height: 1.45;
     }
 
-    .status {
-        font-size: 0.78rem;
-        color: #166534;
-        background: #f0fdf4;
-        border: 1px solid #dcfce7;
-        border-radius: 999px;
-        padding: 0.15rem 0.46rem;
-        display: inline-block;
-        margin-bottom: 0.55rem;
-    }
-
-    .open-link {
-        margin-top: 0.1rem;
-    }
-
-    .open-link a {
-        color: #1d4ed8;
+    [data-testid="stPageLink"] a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: #111827;
+        color: #ffffff !important;
+        border: 1px solid #0f172a;
+        border-radius: 10px;
+        padding: 0.34rem 0.66rem;
+        font-size: 0.86rem;
         font-weight: 600;
-        text-decoration: none;
+        text-decoration: none !important;
+        transition: transform 0.12s ease, background 0.12s ease;
     }
-    .open-link a:hover {
-        text-decoration: underline;
+
+    [data-testid="stPageLink"] a:hover {
+        background: #1f2937;
+        transform: translateY(-1px);
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
+st.markdown("<div class='landing-wrap'>", unsafe_allow_html=True)
 st.markdown(
     """
     <section class="hero">
-      <h1>Считайте правильно.<br>Тестируйте уверенно.</h1>
-      <p class="sub">Набор инструментов для A/B-тестирования, проверки гипотез и планирования экспериментов.</p>
-      <p class="desc">Калькуляторы и проверки для продуктовых, маркетинговых и CRO-экспериментов.</p>
+      <h1 class="hero-title">Считайте правильно.<br>Тестируйте уверенно.</h1>
+      <p class="hero-subtitle">Инструменты для A/B-тестирования, проверки гипотез и планирования экспериментов.</p>
+      <p class="hero-support">Калькуляторы и проверки для продуктовых, маркетинговых и CRO-экспериментов.</p>
     </section>
     """,
     unsafe_allow_html=True,
@@ -194,22 +241,27 @@ catalog = [
 ]
 
 for section_title, tools in catalog:
-    st.markdown(f"<div class='section-title'>{section_title}</div>", unsafe_allow_html=True)
-    columns_count = 3 if len(tools) >= 3 else 2
+    st.markdown(f"<section class='group'><h3>{section_title}</h3>", unsafe_allow_html=True)
+    columns_count = min(3, max(2, len(tools)))
     cols = st.columns(columns_count)
 
     for idx, tool in enumerate(tools):
         with cols[idx % columns_count]:
             st.markdown(
                 f"""
-                <div class="card">
-                    <span class="badge">#{tool['badge']}</span>
-                    <h4>{tool['title']}</h4>
-                    <p>{tool['description']}</p>
-                    <span class="status">{tool['status']}</span>
-                    <div class="open-link"></div>
-                </div>
+                <article class="tool-card">
+                    <div class="tool-meta">
+                        <span class="tool-badge">#{tool['badge']}</span>
+                        <span class="tool-status">{tool['status']}</span>
+                    </div>
+                    <h4 class="tool-title">{tool['title']}</h4>
+                    <p class="tool-desc">{tool['description']}</p>
                 """,
                 unsafe_allow_html=True,
             )
             st.page_link(tool["page"], label="Открыть", icon=tool["icon"])
+            st.markdown("</article>", unsafe_allow_html=True)
+
+    st.markdown("</section>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
