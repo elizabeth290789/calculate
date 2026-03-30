@@ -3,10 +3,11 @@ import streamlit as st
 from statsmodels.stats.power import NormalIndPower
 from statsmodels.stats.proportion import proportion_effectsize
 
-from utils.ui import configure_page, render_tool_header
 
-
-configure_page(title="Размер выборки для A/B/C теста (Bonferroni)", icon="📊")
+st.set_page_config(
+    page_title="Размер выборки для A/B/C теста (Bonferroni)",
+    page_icon="📊",
+)
 
 
 def sample_size_three_variants_bonferroni(
@@ -53,67 +54,65 @@ def sample_size_three_variants_bonferroni(
     )
 
 
-render_tool_header(
-    "Размер выборки для A/B/C теста",
-    "Расчёт для трех вариантов (A/B/C) с поправкой Бонферрони для сравнений A-B и A-C.",
+st.title("Калькулятор размера выборки для A/B/C теста")
+st.subheader(
+    "Расчёт размера выборки для бинарной метрики при трёх вариантах (A/B/C) "
+    "с поправкой Бонферрони для двух сравнений: A-B и A-C."
+)
+st.caption(
+    "Глобальный уровень значимости делится на число сравнений (Bonferroni correction)."
 )
 
-left, right = st.columns([1.1, 1], gap="large")
+baseline_conversion = st.number_input(
+    "Базовая конверсия (%)",
+    min_value=0.0,
+    max_value=100.0,
+    value=7.0,
+    step=0.1,
+    format="%g",
+)
 
-with left:
-    baseline_conversion = st.number_input(
-        "Базовая конверсия (%)",
-        min_value=0.0,
-        max_value=100.0,
-        value=7.0,
-        step=0.1,
-        format="%g",
-    )
+mde_type = st.radio(
+    "Тип MDE",
+    options=("процентные пункты", "относительный uplift"),
+    index=0,
+)
 
-    mde_type = st.radio(
-        "Тип MDE",
-        options=("процентные пункты", "относительный uplift"),
-        index=0,
-    )
+mde_label = "MDE (п.п.)" if mde_type == "процентные пункты" else "MDE uplift (%)"
+mde_value = st.number_input(
+    mde_label,
+    min_value=0.0001,
+    value=0.5,
+    step=0.1,
+    format="%g",
+)
 
-    mde_label = "MDE (п.п.)" if mde_type == "процентные пункты" else "MDE uplift (%)"
-    mde_value = st.number_input(
-        mde_label,
-        min_value=0.0001,
-        value=0.5,
-        step=0.1,
-        format="%g",
-    )
+alpha_global = st.number_input(
+    "alpha_global",
+    min_value=0.0001,
+    max_value=0.9999,
+    value=0.05,
+    step=0.01,
+    format="%g",
+)
 
-    alpha_global = st.number_input(
-        "alpha_global",
-        min_value=0.0001,
-        max_value=0.9999,
-        value=0.05,
-        step=0.01,
-        format="%g",
-    )
+power = st.number_input(
+    "power",
+    min_value=0.0001,
+    max_value=0.9999,
+    value=0.8,
+    step=0.05,
+    format="%g",
+)
 
-    power = st.number_input(
-        "power",
-        min_value=0.0001,
-        max_value=0.9999,
-        value=0.8,
-        step=0.05,
-        format="%g",
-    )
+n_comparisons = st.number_input(
+    "Количество сравнений",
+    min_value=1,
+    value=2,
+    step=1,
+)
 
-    n_comparisons = st.number_input(
-        "Количество сравнений",
-        min_value=1,
-        value=2,
-        step=1,
-    )
-
-    submitted = st.button("Рассчитать", use_container_width=True)
-
-with right:
-    st.markdown("#### Результаты")
+submitted = st.button("Рассчитать", use_container_width=True)
 
 if submitted:
     errors = []
@@ -141,50 +140,44 @@ if submitted:
             "Target conversion (p2) должна быть меньше 100%. Уменьшите baseline или MDE."
         )
 
-    with right:
-        if errors:
-            for error in errors:
-                st.error(error)
-        else:
-            (
-                p1,
-                p2,
-                alpha_global,
-                alpha_local,
-                power,
-                n_group,
-                n_total_three_groups,
-                n_per_comparison,
-            ) = sample_size_three_variants_bonferroni(
-                baseline_conversion_pct=baseline_conversion,
-                mde_value_pct=mde_value,
-                mde_type=mde_type,
-                alpha_global=alpha_global,
-                power=power,
-                n_comparisons=int(n_comparisons),
-            )
+    if errors:
+        for error in errors:
+            st.error(error)
+    else:
+        (
+            p1,
+            p2,
+            alpha_global,
+            alpha_local,
+            power,
+            n_group,
+            n_total_three_groups,
+            n_per_comparison,
+        ) = sample_size_three_variants_bonferroni(
+            baseline_conversion_pct=baseline_conversion,
+            mde_value_pct=mde_value,
+            mde_type=mde_type,
+            alpha_global=alpha_global,
+            power=power,
+            n_comparisons=int(n_comparisons),
+        )
 
-            st.markdown('<div class="result-panel">', unsafe_allow_html=True)
-            col1, col2 = st.columns(2)
-            col3, col4 = st.columns(2)
-            col5, col6 = st.columns(2)
+        col1, col2 = st.columns(2)
+        col3, col4 = st.columns(2)
+        col5, col6 = st.columns(2)
 
-            col1.metric("Baseline conversion", f"{p1:.2%}")
-            col2.metric("Target conversion", f"{p2:.2%}")
-            col3.metric("Corrected alpha", f"{alpha_local:.4f}")
-            col4.metric("Sample size per group", f"{n_group:,}".replace(",", " "))
-            col5.metric(
-                "Sample size per comparison (2 группы)",
-                f"{n_per_comparison:,}".replace(",", " "),
-            )
-            col6.metric(
-                "Total sample size for 3 groups",
-                f"{n_total_three_groups:,}".replace(",", " "),
-            )
-            st.markdown("</div>", unsafe_allow_html=True)
+        col1.metric("Baseline conversion", f"{p1:.2%}")
+        col2.metric("Target conversion", f"{p2:.2%}")
+        col3.metric("Corrected alpha", f"{alpha_local:.4f}")
+        col4.metric("Sample size per group", f"{n_group:,}".replace(",", " "))
+        col5.metric(
+            "Sample size per comparison (2 группы)",
+            f"{n_per_comparison:,}".replace(",", " "),
+        )
+        col6.metric(
+            "Total sample size for 3 groups",
+            f"{n_total_three_groups:,}".replace(",", " "),
+        )
 
-            st.write("Расчёт предполагает равные размеры групп и бинарную метрику (конверсию).")
-            st.write("Используется поправка Бонферрони для двух сравнений: A-B и A-C.")
-else:
-    with right:
-        st.info("Заполните параметры слева и выполните расчет.")
+        st.write("Расчёт предполагает равные размеры групп и бинарную метрику (конверсию).")
+        st.write("Используется поправка Бонферрони для двух сравнений: A-B и A-C.")
