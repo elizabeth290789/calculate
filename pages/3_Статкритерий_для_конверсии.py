@@ -1,9 +1,13 @@
 import streamlit as st
 
+from utils.ui import apply_base_styles
+
 from utils.calculations import calculate_two_proportion_z_test
 
 
 st.set_page_config(page_title="Статкритерий для конверсий", page_icon="🧪")
+
+apply_base_styles()
 
 METRIC_CONFIG = {
     "Конверсия в регистрацию": {

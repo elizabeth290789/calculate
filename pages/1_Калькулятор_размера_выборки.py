@@ -2,6 +2,8 @@ import math
 
 import streamlit as st
 
+from utils.ui import apply_base_styles
+
 from utils.calculations import calculate_sample_size_per_group
 
 
@@ -9,6 +11,8 @@ st.set_page_config(
     page_title="Калькулятор размера выборки",
     page_icon="📊",
 )
+
+apply_base_styles()
 
 st.title("Калькулятор размера выборки")
 st.subheader(
