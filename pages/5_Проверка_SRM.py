@@ -20,22 +20,13 @@ if "srm_expected_shares" not in st.session_state:
     st.session_state.srm_expected_shares = [0.5, 0.5]
 
 
-def build_equal_shares(groups_count: int, precision: int = 4) -> list[float]:
-    if groups_count <= 0:
-        return []
-
-    equal_share = round(1 / groups_count, precision)
-    shares = [equal_share] * groups_count
-    shares[-1] = round(1 - sum(shares[:-1]), precision)
-    return shares
-
-
 def add_group() -> None:
     current_groups = len(st.session_state.srm_observed)
     new_groups = current_groups + 1
+    equal_share = 1 / new_groups
 
     st.session_state.srm_observed = st.session_state.srm_observed + [1000]
-    st.session_state.srm_expected_shares = build_equal_shares(new_groups)
+    st.session_state.srm_expected_shares = [equal_share] * new_groups
 
 
 st.button("Добавить группу", on_click=add_group)
@@ -92,11 +83,9 @@ if submitted:
         errors.append("Все ожидаемые доли должны быть больше 0.")
 
     expected_share_sum = sum(expected_share_values)
-    expected_share_epsilon = 1e-3
-    if abs(expected_share_sum - 1.0) > expected_share_epsilon:
+    if abs(expected_share_sum - 1.0) > 1e-6:
         errors.append(
-            "Сумма ожидаемых долей должна быть равна 1 (допуск ±0.001). "
-            "Исправьте ввод и повторите расчет."
+            "Сумма ожидаемых долей должна быть равна 1. Исправьте ввод и повторите расчет."
         )
 
     if sum(observed_values) == 0:
@@ -104,10 +93,7 @@ if submitted:
 
     if errors:
         for error in errors:
-            if "Сумма ожидаемых долей должна быть равна 1" in error:
-                st.warning(error)
-            else:
-                st.error(error)
+            st.error(error)
     else:
         try:
             result = calculate_srm_chi_square(

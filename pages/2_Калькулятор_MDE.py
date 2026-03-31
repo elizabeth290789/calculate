@@ -85,9 +85,9 @@ success_count = st.number_input(
 
 test_months = st.number_input(
     "Длительность теста (в месяцах)",
-    min_value=0.1,
+    min_value=1,
     value=1,
-    step=0.1,
+    step=1,
 )
 alpha = st.number_input(
     "alpha",
