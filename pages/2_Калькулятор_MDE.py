@@ -12,7 +12,7 @@ st.subheader(
 
 EXPERIMENT_CONFIG = {
     "Лендинг / регистрация": {
-        "base_label": "Сессии в месяц",
+        "base_label": "Пользователи в месяц",
         "base_default": 30000,
         "base_step": 1000,
         "success_label": "Регистрации в месяц",
