@@ -8,9 +8,9 @@ st.set_page_config(page_title="Статкритерий для конверси�
 METRIC_CONFIG = {
     "Конверсия в регистрацию": {
         "title": "конверсии в регистрацию",
-        "n_a_label": "Сессий в control",
+        "n_a_label": "Пользователи в control",
         "success_a_label": "Регистраций в control",
-        "n_b_label": "Сессий в test",
+        "n_b_label": "Пользователи в test",
         "success_b_label": "Регистраций в test",
     },
     "Retention (ret3+)": {
