@@ -4,11 +4,6 @@ from statsmodels.stats.power import NormalIndPower
 from statsmodels.stats.proportion import proportion_effectsize
 
 
-st.set_page_config(
-    page_title="Размер выборки для A/B/C теста (Bonferroni)",
-    page_icon="📊",
-)
-
 
 def sample_size_three_variants_bonferroni(
     baseline_conversion_pct: float,

@@ -1,25 +1,50 @@
 import streamlit as st
 
-
 st.set_page_config(
     page_title="A/B Test Toolkit",
     page_icon="📊",
 )
 
-st.title("A/B Test Toolkit")
-st.write(
-    "Набор инструментов для планирования и анализа A/B-тестов. "
-    "Используйте страницы в боковом меню, чтобы открыть нужный калькулятор."
+navigation = st.navigation(
+    [
+        st.Page(
+            "pages/1_Калькулятор_размера_выборки.py",
+            title="Калькулятор размера выборки",
+            icon="📊",
+            url_path="sample-size",
+            default=True,
+        ),
+        st.Page(
+            "pages/2_Калькулятор_MDE.py",
+            title="Калькулятор MDE",
+            icon="📏",
+            url_path="mde",
+        ),
+        st.Page(
+            "pages/5_Проверка_SRM.py",
+            title="SRM",
+            icon="⚖️",
+            url_path="srm",
+        ),
+        st.Page(
+            "pages/3_Статкритерий_для_конверсии.py",
+            title="Статкритерий",
+            icon="🧪",
+            url_path="stat-test",
+        ),
+        st.Page(
+            "pages/6_Размер_выборки_A_B_C_Bonferroni.py",
+            title="Bonferroni",
+            icon="📊",
+            url_path="bonferroni",
+        ),
+        st.Page(
+            "pages/4_Статкритерий_ARPU.py",
+            title="Статкритерий ARPU",
+            icon="💰",
+            url_path="stat-test-arpu",
+        ),
+    ]
 )
 
-st.subheader("Доступные инструменты")
-st.markdown(
-    """
-    - **Калькулятор размера выборки** — сценарный расчет выборки и длительности по типу эксперимента.
-    - **Калькулятор MDE** — сценарный расчет минимально детектируемого эффекта (MDE) по типу эксперимента.
-    - **Статкритерий для конверсии** — заготовка для проверки статистической значимости по конверсии.
-    - **Статкритерий для ARPU** — Welch t-test по агрегированным данным (n, mean, std).
-    - **Проверка несоответствия выборочных соотношений (SRM)** — проверка соответствия фактического сплита ожидаемому через chi-square goodness-of-fit test.
-    - **Размер выборки для A/B/C теста (Bonferroni)** — расчет выборки для трех групп с учетом поправки Бонферрони для сравнений A-B и A-C.
-    """
-)
+navigation.run()

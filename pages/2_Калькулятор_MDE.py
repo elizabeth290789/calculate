@@ -3,8 +3,6 @@ import streamlit as st
 from utils.calculations import calculate_mde_for_proportion
 
 
-st.set_page_config(page_title="Калькулятор MDE", page_icon="📏")
-
 st.title("Калькулятор MDE")
 st.subheader(
     "Калькулятор помогает понять, какой минимальный эффект можно детектировать при текущей базе и длительности теста."
