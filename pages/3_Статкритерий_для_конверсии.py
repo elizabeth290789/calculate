@@ -3,8 +3,6 @@ import streamlit as st
 from utils.calculations import calculate_two_proportion_z_test
 
 
-st.set_page_config(page_title="Статкритерий для конверсий", page_icon="🧪")
-
 METRIC_CONFIG = {
     "Конверсия в регистрацию": {
         "title": "конверсии в регистрацию",

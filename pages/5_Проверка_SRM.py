@@ -4,8 +4,6 @@ import streamlit as st
 from utils.calculations import calculate_srm_chi_square
 
 
-st.set_page_config(page_title="Проверка SRM", page_icon="⚖️")
-
 st.title("Проверка несоответствия выборочных соотношений (SRM)")
 st.subheader(
     "Тест SRM помогает проверить, соответствует ли фактическое распределение пользователей "

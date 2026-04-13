@@ -5,11 +5,6 @@ import streamlit as st
 from utils.calculations import calculate_sample_size_per_group
 
 
-st.set_page_config(
-    page_title="Калькулятор размера выборки",
-    page_icon="📊",
-)
-
 st.title("Калькулятор размера выборки")
 st.subheader(
     "Калькулятор расчёта выборки и длительности A/B-теста для двух равных групп 50/50"
