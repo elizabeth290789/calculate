@@ -8,11 +8,17 @@ st.set_page_config(
 navigation = st.navigation(
     [
         st.Page(
+            "pages/0_Home.py",
+            title="Home",
+            icon="🏠",
+            url_path="",
+            default=True,
+        ),
+        st.Page(
             "pages/1_Калькулятор_размера_выборки.py",
             title="Калькулятор размера выборки",
             icon="📊",
             url_path="sample-size",
-            default=True,
         ),
         st.Page(
             "pages/2_Калькулятор_MDE.py",
