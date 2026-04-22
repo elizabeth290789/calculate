@@ -103,6 +103,16 @@ power = st.number_input(
     step=0.01,
     format="%g",
 )
+hypothesis_type_label = st.selectbox(
+    "Тип проверки гипотезы",
+    options=("Двусторонняя", "Односторонняя (test > control)"),
+    index=0,
+)
+hypothesis_type = (
+    "two-sided"
+    if hypothesis_type_label == "Двусторонняя"
+    else "one-sided-test-greater"
+)
 
 submitted = st.button("Рассчитать", use_container_width=True)
 
@@ -147,6 +157,7 @@ if submitted:
             n_per_group=n_per_group,
             alpha=alpha,
             power=power,
+            hypothesis_type=hypothesis_type,
         )
 
         col1, col2 = st.columns(2)
@@ -163,5 +174,8 @@ if submitted:
             f"{baseline_rate:.2%} → {detectable_rate:.2%}",
         )
 
-        st.caption("Расчет выполнен для двух равных групп 50/50.")
+        st.caption(
+            "Расчет выполнен для двух равных групп 50/50. "
+            f"Тип проверки: {hypothesis_type_label.lower()}."
+        )
         st.info(config["explanation"])

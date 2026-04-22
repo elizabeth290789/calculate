@@ -30,9 +30,24 @@ METRIC_CONFIG = {
 st.title("Статкритерий для конверсий")
 conversion_type = st.selectbox("Тип конверсии", options=list(METRIC_CONFIG.keys()))
 selected_metric = METRIC_CONFIG[conversion_type]
+hypothesis_type_label = st.selectbox(
+    "Тип проверки гипотезы",
+    options=("Двусторонняя", "Односторонняя (test > control)"),
+    index=0,
+)
+hypothesis_type = (
+    "two-sided"
+    if hypothesis_type_label == "Двусторонняя"
+    else "one-sided-test-greater"
+)
+test_description = (
+    "двустороннего z-теста для двух пропорций"
+    if hypothesis_type == "two-sided"
+    else "одностороннего z-теста для двух пропорций (test > control)"
+)
 
 st.subheader(
-    f"Сравнение двух {selected_metric['title']} с помощью двустороннего z-теста для двух пропорций."
+    f"Сравнение двух {selected_metric['title']} с помощью {test_description}."
 )
 
 with st.form("conversion_z_test_form"):
@@ -109,6 +124,7 @@ if submitted:
                 n_b=n_b,
                 success_b=success_b,
                 alpha=alpha,
+                hypothesis_type=hypothesis_type,
             )
         except ValueError as exc:
             st.error(str(exc))
@@ -171,5 +187,5 @@ if submitted:
 
             st.caption(
                 "Для бинарных метрик (конверсия в регистрацию, retention, конверсия в покупку) "
-                "используется двусторонний z-тест для двух пропорций."
+                f"используется {test_description}."
             )

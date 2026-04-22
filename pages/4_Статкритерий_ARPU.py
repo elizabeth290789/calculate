@@ -5,8 +5,23 @@ from utils.calculations import welch_ttest_from_stats
 
 
 st.title("Статкритерий для ARPU")
+hypothesis_type_label = st.selectbox(
+    "Тип проверки гипотезы",
+    options=("Двусторонняя", "Односторонняя (test > control)"),
+    index=0,
+)
+hypothesis_type = (
+    "two-sided"
+    if hypothesis_type_label == "Двусторонняя"
+    else "one-sided-test-greater"
+)
+test_description = (
+    "двустороннего Welch t-test"
+    if hypothesis_type == "two-sided"
+    else "одностороннего Welch t-test (test > control)"
+)
 st.subheader(
-    "Сравнение ARPU в control и test с помощью Welch t-test по агрегированным данным."
+    f"Сравнение ARPU в control и test с помощью {test_description} по агрегированным данным."
 )
 
 with st.form("arpu_welch_ttest_form"):
@@ -103,6 +118,7 @@ if submitted:
                 std_b=std_b,
                 n_b=n_b,
                 alpha=alpha,
+                hypothesis_type=hypothesis_type,
             )
         except ValueError as exc:
             st.error(str(exc))
@@ -154,6 +170,6 @@ if submitted:
                 )
 
             st.caption(
-                "Используется Welch t-test по агрегированным статистикам "
+                f"Используется {test_description} по агрегированным статистикам "
                 "(размер группы, среднее и стандартное отклонение)."
             )
