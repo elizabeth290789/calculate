@@ -94,6 +94,11 @@ power = st.number_input(
     step=0.01,
     format="%g",
 )
+hypothesis_type_label = st.selectbox(
+    "Тип проверки гипотезы",
+    options=("Двусторонняя", "Односторонняя (test > control)"),
+    index=0,
+)
 traffic_share = st.number_input(
     "Доля трафика, идущая в эксперимент",
     min_value=0.0,
@@ -101,6 +106,11 @@ traffic_share = st.number_input(
     value=1.0,
     step=0.05,
     format="%g",
+)
+hypothesis_type = (
+    "two-sided"
+    if hypothesis_type_label == "Двусторонняя"
+    else "one-sided-test-greater"
 )
 
 submitted = st.button("Рассчитать", use_container_width=True)
@@ -146,6 +156,7 @@ if submitted:
             mde_pp=mde_pp,
             alpha=alpha,
             power=power,
+            hypothesis_type=hypothesis_type,
         )
         total_sample_size = sample_size_per_group * 2
         uplift_pct = ((p2 - p1) / p1) * 100 if p1 > 0 else float("inf")
@@ -173,5 +184,8 @@ if submitted:
         )
         col6.metric("Оценочная длительность теста (дни)", f"{duration_days}")
 
-        st.caption("Расчет выполнен для двух равных групп 50/50.")
+        st.caption(
+            "Расчет выполнен для двух равных групп 50/50. "
+            f"Тип проверки: {hypothesis_type_label.lower()}."
+        )
         st.info(config["explanation"])

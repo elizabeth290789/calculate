@@ -13,11 +13,12 @@ def calculate_sample_size_per_group(
     mde_pp: float,
     alpha: float = 0.05,
     power: float = 0.8,
+    hypothesis_type: str = "two-sided",
 ) -> tuple[int, float]:
     p2 = p1 + mde_pp / 100
     p_bar = (p1 + p2) / 2
 
-    z_alpha = norm.ppf(1 - alpha / 2)
+    z_alpha = norm.ppf(1 - alpha / 2) if hypothesis_type == "two-sided" else norm.ppf(1 - alpha)
     z_power = norm.ppf(power)
 
     numerator = (
@@ -35,8 +36,9 @@ def calculate_mde_for_proportion(
     n_per_group: float,
     alpha: float = 0.05,
     power: float = 0.8,
+    hypothesis_type: str = "two-sided",
 ) -> tuple[float, float, float]:
-    z_alpha = norm.ppf(1 - alpha / 2)
+    z_alpha = norm.ppf(1 - alpha / 2) if hypothesis_type == "two-sided" else norm.ppf(1 - alpha)
     z_power = norm.ppf(power)
 
     mde = (z_alpha + z_power) * math.sqrt(
@@ -54,6 +56,7 @@ def calculate_two_proportion_z_test(
     n_b: int,
     success_b: int,
     alpha: float,
+    hypothesis_type: str = "two-sided",
 ) -> dict[str, float]:
     p_a = success_a / n_a
     p_b = success_b / n_b
@@ -67,7 +70,10 @@ def calculate_two_proportion_z_test(
         )
 
     z_stat = diff / se_pool
-    p_value = 2 * (1 - norm.cdf(abs(z_stat)))
+    if hypothesis_type == "two-sided":
+        p_value = 2 * (1 - norm.cdf(abs(z_stat)))
+    else:
+        p_value = 1 - norm.cdf(z_stat)
 
     z_crit = norm.ppf(1 - alpha / 2)
     se_unpooled = math.sqrt(p_a * (1 - p_a) / n_a + p_b * (1 - p_b) / n_b)
@@ -93,6 +99,7 @@ def welch_ttest_from_stats(
     std_b: float,
     n_b: int,
     alpha: float = 0.05,
+    hypothesis_type: str = "two-sided",
 ) -> dict[str, float]:
     if n_a <= 1 or n_b <= 1:
         raise ValueError("Размер групп должен быть больше 1.")
@@ -103,7 +110,7 @@ def welch_ttest_from_stats(
     if not 0 < alpha < 1:
         raise ValueError("alpha должен быть между 0 и 1.")
 
-    t_stat, p_value = stats.ttest_ind_from_stats(
+    t_stat, _ = stats.ttest_ind_from_stats(
         mean1=mean_b,
         std1=std_b,
         nobs1=n_b,
@@ -124,6 +131,10 @@ def welch_ttest_from_stats(
 
     df = df_num / df_den
     t_crit = stats.t.ppf(1 - alpha / 2, df)
+    if hypothesis_type == "two-sided":
+        p_value = 2 * (1 - stats.t.cdf(abs(t_stat), df))
+    else:
+        p_value = 1 - stats.t.cdf(t_stat, df)
 
     diff = mean_b - mean_a
     ci_low = diff - t_crit * se
